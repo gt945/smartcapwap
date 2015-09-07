@@ -4,6 +4,7 @@
 #include <linux/netdevice.h>
 #include <linux/etherdevice.h>
 #include <linux/smp.h>
+#include <linux/version.h>
 #include "iface.h"
 #include "station.h"
 #include "capwap.h"
@@ -175,7 +176,11 @@ int sc_iface_create(const char* ifname, uint16_t mtu) {
 	TRACEKMOD("### sc_iface_create\n");
 
 	/* Create interface */
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,0)
+	dev = alloc_netdev(sizeof(struct sc_netdev_priv), ifname, NET_NAME_UNKNOWN, sc_iface_netdev_setup);
+#else
 	dev = alloc_netdev(sizeof(struct sc_netdev_priv), ifname, sc_iface_netdev_setup);
+#endif
 	if (!dev) {
 		return -ENOMEM;
 	}

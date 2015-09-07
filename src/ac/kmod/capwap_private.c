@@ -8,6 +8,7 @@
 #include <linux/etherdevice.h>
 #include <linux/smp.h>
 #include <linux/lockdep.h>
+#include <linux/version.h>
 #include <net/ipv6.h>
 #include <net/cfg80211.h>
 #include "socket.h"
@@ -411,8 +412,13 @@ static int sc_capwap_thread_recvpacket(struct sk_buff* skb) {
 		TRACEKMOD("*** Receive SKB_CAPWAP_FLAG_FROM_AC_TAP\n");
 
 		/* Retrieve VLAN */
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,0,0)
+		if (skb_vlan_tag_present(skb)) {
+			vlan = skb_vlan_tag_get_id(skb);
+#else
 		if (vlan_tx_tag_present(skb)) {
 			vlan = vlan_tx_tag_get_id(skb);
+#endif
 		} else if (eh->h_proto == htons(ETH_P_8021Q)) {
 			vlan = ntohs(vlan_eth_hdr(skb)->h_vlan_TCI) & VLAN_VID_MASK;
 
